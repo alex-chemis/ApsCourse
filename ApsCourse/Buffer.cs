@@ -10,12 +10,31 @@ namespace ApsCourse
 {
     internal class Buffer
     {
-        private ConcurrentStack<Request> Requests { get; init; } = new ConcurrentStack<Request>();
-        private int MaxSize { get; init; }
+        private class StackItem
+        {
+            public Request Request { get; set; }
+            public Boolean IsRemoved { get; private set; }
+            public void Remove() => IsRemoved = true;
+
+            public StackItem(Request request)
+            {
+                Request = request;
+                IsRemoved = false;
+            }
+        }
+
+        private ConcurrentStack<StackItem> Requests { get; init; } = new ConcurrentStack<StackItem>();
+
+        public int MaxSize { get; init; }
+        public int NumberFailure { get; private set; }
+        public int Count { get { return Requests.Count - NumberFailure; } }
+        public bool IsEmpty { get { return Requests.IsEmpty; } }
+        public bool IsFull { get { return Requests.Count - NumberFailure > MaxSize; } }
 
         public Buffer(int maxSize)
         {
             MaxSize = maxSize;
+            NumberFailure = 0;
         }
 
         public async Task Add(Request request)
@@ -24,7 +43,12 @@ namespace ApsCourse
 
             _ = Task.Factory.StartNew(() =>
             {
-                Requests.Push(request);
+                Requests.Push(new StackItem(request));
+                if (IsFull)
+                {
+                    Requests.ElementAt(Requests.Count - NumberFailure - 1).Remove();
+                    NumberFailure++;
+                }
                 tcs.SetResult();
             });
 
@@ -37,23 +61,21 @@ namespace ApsCourse
 
             _ = Task.Factory.StartNew(() =>
             {
-                Request r;
-                while (!Requests.TryPop(out r));
-                tcs.SetResult(r);
+                StackItem r;
+                bool isPoped = false;
+                do
+                {
+                    isPoped = Requests.TryPop(out r);
+                    if (r.IsRemoved)
+                    {
+                        isPoped = false;
+                        NumberFailure--;
+                    }    
+                } while (!isPoped);
+                tcs.SetResult(r.Request);
             });
 
             return await tcs.Task;
         }
-
-        public bool IsEmpty()
-        {
-            return Requests.Count == 0;
-        }
-
-        public bool IsFull()
-        {
-            return Requests.Count == MaxSize;
-        }
-
     }
 }

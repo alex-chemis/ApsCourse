@@ -12,15 +12,14 @@ namespace ApsCourse
 
         public int Id { get; init; }
 
-        public double Lambda { get; private set; }
+        public double Lambda { get; init; }
 
-        private Random Random { get; init; }
+        private Random Random { get; init; } = new Random();
 
         public Source(double lambda)
         {
             Id = ID++;
             Lambda = lambda;
-            Random = new Random();
         }
         private double GetInterval()
         {
