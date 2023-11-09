@@ -8,21 +8,34 @@ namespace ApsCourse
 {
     internal class RequestGenerator
     {
-        private List<Source> Sources { get; init; }
-        private InputBufferDispatcher InputBufferDispatcher { get; init; }
+        public int NumberOfRequests { get; set; }
+        public List<Source> Sources { get; set; }
+        public InputBufferDispatcher InputBufferDispatcher { get; init; }
         
-        public RequestGenerator(List<Source> sources, InputBufferDispatcher inputBufferDispatcher)
+        public RequestGenerator(int numberOfRequests, List<Source> sources, InputBufferDispatcher inputBufferDispatcher)
         {
+            NumberOfRequests = numberOfRequests;
             Sources = sources;
             InputBufferDispatcher = inputBufferDispatcher;
         }
 
+        private async Task StartSource(Source source)
+        {
+            for (int i = 0; i < NumberOfRequests; i++)
+            {
+                var request = await source.GenerateRequest();
+                await InputBufferDispatcher.Add(request);
+            }
+        }
+
         public async Task Generate()
         {
+            var tasks = new List<Task>();
             foreach (var source in Sources) 
             {
-                await InputBufferDispatcher.Add(new Request(1, source.Id, new TimeSpan(1)));
+                tasks.Add(StartSource(source));
             }
+            await Task.WhenAll(tasks);
         }
 
     }

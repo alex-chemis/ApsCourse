@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,23 +10,39 @@ namespace ApsCourse
 {
     internal class Buffer
     {
-        private BufferBlock<Request> Requests { get; init; }
+        private ConcurrentStack<Request> Requests { get; init; } = new ConcurrentStack<Request>();
         private int MaxSize { get; init; }
 
-        public Buffer(BufferBlock<Request> requests, int maxSize)
+        public Buffer(int maxSize)
         {
-            Requests = requests;
             MaxSize = maxSize;
         }
 
         public async Task Add(Request request)
         {
-            await Requests.SendAsync(request);
+            TaskCompletionSource tcs = new TaskCompletionSource();
+
+            _ = Task.Factory.StartNew(() =>
+            {
+                Requests.Push(request);
+                tcs.SetResult();
+            });
+
+            await tcs.Task;
         }
 
         public async Task<Request> Get()
         {
-            return await Requests.ReceiveAsync();
+            var tcs = new TaskCompletionSource<Request>();
+
+            _ = Task.Factory.StartNew(() =>
+            {
+                Request r;
+                while (!Requests.TryPop(out r));
+                tcs.SetResult(r);
+            });
+
+            return await tcs.Task;
         }
 
         public bool IsEmpty()

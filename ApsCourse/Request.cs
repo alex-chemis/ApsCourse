@@ -8,15 +8,15 @@ namespace ApsCourse
 {
     internal class Request
     {
+        static private int ID = 0;
         public int Id { get; init; }
         public int SourceId { get; init; }
-        public TimeSpan ProcessingTime { get; init; }
 
-        public Request(int id, int sourceId, TimeSpan processingTime)
+        public Request(int sourceId)
         {
-            Id = id;
+            Id = ID;
+            Interlocked.Increment(ref ID);
             SourceId = sourceId;
-            ProcessingTime = processingTime;
         }
 
 

@@ -8,12 +8,13 @@ namespace ApsCourse
 {
     internal class Device
     {
+        static private int ID = 0;
         public int Id { get; init; }
         public int Priority { get; init; }
 
-        public Device(int id, int priority)
+        public Device(int priority)
         {
-            Id = id;
+            Id = ID++;
             Priority = priority;
         }
 
