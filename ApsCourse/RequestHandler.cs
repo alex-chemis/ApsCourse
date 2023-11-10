@@ -24,9 +24,9 @@ namespace ApsCourse
             OutputBufferDispatcher = outputBufferDispatcher;
         }
 
-        public async Task Handle()
+        public async Task Handle(Task generator)
         {
-            while (true)
+            while (!generator.IsCompleted || !OutputBufferDispatcher.Buffer.IsEmpty)
             {
                 foreach (var device in Devices)
                 {
@@ -38,6 +38,7 @@ namespace ApsCourse
                     }
                 }
             }
+            await Task.Delay(1000);
         }
     }
 }

@@ -18,6 +18,7 @@ namespace ApsCourse
         public async Task<Request> Get()
         {
             var request = await Buffer.Get();
+            Console.WriteLine($"Request ID:{request.Id} of SourceID:{request.SourceId} has been sent to dispatcher");
             return request;
         }
     }

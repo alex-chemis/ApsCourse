@@ -19,6 +19,7 @@ namespace ApsCourse
         public async Task Add(Request request)
         {
             await Buffer.Add(request);
+            Console.WriteLine($"Request ID:{request.Id} of SourceID:{request.SourceId} has been sent to buffer");
         }
     }
 }

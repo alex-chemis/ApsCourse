@@ -17,7 +17,7 @@ namespace ApsCourse
         public async Task StartAutoMode()
         {
             var requestGeneratorTask = RequestGenerator.Generate();
-            var requestHandlerTask = RequestHandler.Handle();
+            var requestHandlerTask = RequestHandler.Handle(requestGeneratorTask);
 
             await Task.WhenAll(requestGeneratorTask, requestHandlerTask);
         }

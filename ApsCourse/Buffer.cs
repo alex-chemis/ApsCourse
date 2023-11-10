@@ -28,7 +28,7 @@ namespace ApsCourse
         public int MaxSize { get; init; }
         public int NumberFailure { get; private set; }
         public int Count { get { return Requests.Count - NumberFailure; } }
-        public bool IsEmpty { get { return Requests.IsEmpty; } }
+        public bool IsEmpty { get { return Count == 0; } }
         public bool IsFull { get { return Requests.Count - NumberFailure > MaxSize; } }
 
         public Buffer(int maxSize)
@@ -46,12 +46,14 @@ namespace ApsCourse
                 Requests.Push(new StackItem(request));
                 if (IsFull)
                 {
-                    Requests.ElementAt(Requests.Count - NumberFailure - 1).Remove();
+                    var r = Requests.ElementAt(Requests.Count - NumberFailure - 1);
+                    r.Remove();
+                    Console.WriteLine($"Request ID:{r.Request.Id} of SourceID:{r.Request.SourceId} was removed!");
                     NumberFailure++;
                 }
                 tcs.SetResult();
             });
-            Console.WriteLine(3);
+
             await tcs.Task;
         }
 
