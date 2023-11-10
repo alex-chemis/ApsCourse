@@ -8,6 +8,7 @@ namespace ApsCourse
 {
     internal class InputBufferDispatcher
     {
+        private Random Random { get; init; } = new Random();
         public Buffer Buffer { get; init; }
 
         public InputBufferDispatcher(Buffer buffer)

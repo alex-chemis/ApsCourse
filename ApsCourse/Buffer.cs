@@ -40,7 +40,7 @@ namespace ApsCourse
         public async Task Add(Request request)
         {
             TaskCompletionSource tcs = new TaskCompletionSource();
-
+            
             _ = Task.Factory.StartNew(() =>
             {
                 Requests.Push(new StackItem(request));
@@ -51,7 +51,7 @@ namespace ApsCourse
                 }
                 tcs.SetResult();
             });
-
+            Console.WriteLine(3);
             await tcs.Task;
         }
 
@@ -66,7 +66,7 @@ namespace ApsCourse
                 do
                 {
                     isPoped = Requests.TryPop(out r);
-                    if (r.IsRemoved)
+                    if (isPoped && r.IsRemoved)
                     {
                         isPoped = false;
                         NumberFailure--;

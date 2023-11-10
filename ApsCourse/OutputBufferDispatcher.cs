@@ -17,7 +17,8 @@ namespace ApsCourse
 
         public async Task<Request> Get()
         {
-            return await Buffer.Get();
+            var request = await Buffer.Get();
+            return request;
         }
     }
 }

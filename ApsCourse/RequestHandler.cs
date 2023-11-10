@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO.Pipes;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,49 +9,33 @@ namespace ApsCourse
 {
     internal class RequestHandler
     {
-
-        private SortedSet<Device> _readyDevices = new SortedSet<Device>();
-        private List<Device> _notReadyDevices = new List<Device>();
-
-        public List<Device> Devices { get; set; }
+        public SortedSet<Device> Devices { get; init; } = new SortedSet<Device>();
         public InputBufferDispatcher InputBufferDispatcher { get; init; }
         public OutputBufferDispatcher OutputBufferDispatcher { get; init; }
+        private List<int> l = new List<int>();
 
         public RequestHandler(List<Device> devices, InputBufferDispatcher inputBufferDispatcher, OutputBufferDispatcher outputBufferDispatcher)
         {
-            Devices = devices;
+            foreach (var device in devices)
+            {
+                Devices.Add(device);
+            }
             InputBufferDispatcher = inputBufferDispatcher;
             OutputBufferDispatcher = outputBufferDispatcher;
         }
 
-        private void AddToReady()
-        {
-            foreach (var item in Devices)
-            {
-                _readyDevices.Add(item);
-            }
-        }
-
         public async Task Handle()
         {
-            AddToReady();
             while (true)
             {
-                var request = await OutputBufferDispatcher.Get();
-                if (_readyDevices.Count == 0)
+                foreach (var device in Devices)
                 {
-                    await InputBufferDispatcher.Add(request);
-                }
-                else
-                {
-                    var device = _readyDevices.First();
-                    _readyDevices.Remove(device);
-                    _notReadyDevices.Add(device);
-                    device.HandleRequest(request).ContinueWith(x => 
-                    { 
-                        _notReadyDevices.Remove(device);
-                        _readyDevices.Add(device);
-                    }).Start();
+                    if (device.IsReady)
+                    {
+                        var request = await OutputBufferDispatcher.Get();
+                        var _ = device.HandleRequest(request);
+                        break;
+                    }
                 }
             }
         }

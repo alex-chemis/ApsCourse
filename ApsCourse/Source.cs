@@ -30,7 +30,7 @@ namespace ApsCourse
         {
             await Task.Delay((int)(GetInterval()));
             var ret = new Request(Id);
-            Console.WriteLine($"Source ID:{this.Id} generate Request ID:{ret.Id}");
+            Console.WriteLine($"Source ID:{this.Id} generate Request ID:{ret.Id}, SorceID:{ret.SourceId}");
             return ret;
         }
     }

@@ -13,6 +13,7 @@ namespace ApsCourse
         public int Priority { get; init; }
         public double Alpha { get; init; }
         public double Beta { get; init; }
+        public bool IsReady { get; private set; }
 
         private Random Random { get; init; } = new Random();
 
@@ -22,6 +23,7 @@ namespace ApsCourse
             Priority = priority;
             Alpha = alpha;
             Beta = beta;
+            IsReady = true;
         }
 
         private double GetInterval()
@@ -31,14 +33,18 @@ namespace ApsCourse
 
         public async Task HandleRequest(Request request)
         {
+            IsReady = false;
+            Console.WriteLine($"Device ID:{this.Id} start handle Request ID:{request.Id}");
             await Task.Delay((int)GetInterval());
-            Console.WriteLine($"Device ID:{this.Id} handle Request ID:{request.Id}");
+            Console.WriteLine($"Device ID:{this.Id} finish handle Request ID:{request.Id}");
+            IsReady = true;
         }
 
         public int CompareTo(Device? other)
         { 
             if (other == null) throw new NullReferenceException();
-            return other.Priority - Priority;
+            int byPriority = other.Priority - Priority;
+            return byPriority == 0 ? Id - other.Id : byPriority;
         }
     }
 }
